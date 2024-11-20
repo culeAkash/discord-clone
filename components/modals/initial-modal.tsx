@@ -22,15 +22,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import FileUpload from "@/components/file-upload";
-
-const formSchema = z.object({
-  name: z.string().min(1, { message: "Server name is required" }),
-  imageUrl: z.string().min(1, { message: "Server image is required" }),
-});
+import { serverCreationSchema } from "@/utils/schema";
+import axios, { AxiosError } from "axios";
+import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 const InitialModal = () => {
+  const { toast } = useToast();
+  const router = useRouter();
   const form = useForm({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(serverCreationSchema),
     defaultValues: {
       name: "",
       imageUrl: "",
@@ -39,8 +40,25 @@ const InitialModal = () => {
 
   const { isSubmitting: isLoading } = form.formState;
 
-  const onSubmit = async (formData: z.infer<typeof formSchema>) => {
-    console.log(formData);
+  const onSubmit = async (formData: z.infer<typeof serverCreationSchema>) => {
+    try {
+      await axios.post("/api/server", {
+        name: formData.name,
+        imageUrl: formData.imageUrl,
+      });
+
+      form.reset();
+      router.refresh();
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      console.error(axiosError);
+      // Handle error based on the specific API error
+      toast({
+        title: "Error",
+        description: axiosError.response?.data.message,
+        variant: "destructive",
+      });
+    }
   };
 
   return (

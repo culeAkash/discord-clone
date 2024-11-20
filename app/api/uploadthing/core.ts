@@ -7,7 +7,10 @@ const f = createUploadthing();
 const handleAuth = async () => {
   const { userId } = await auth();
   if (!userId) {
-    throw new Error("Not authenticated");
+    throw new UploadThingError({
+      message: "Not Authenticated",
+      code: "FORBIDDEN",
+    });
   }
   return { userId };
 };

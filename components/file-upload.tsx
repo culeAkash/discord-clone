@@ -1,5 +1,6 @@
 "use client";
 
+import { useToast } from "@/hooks/use-toast";
 import { UploadDropzone } from "@/lib/uploadthing";
 import { X } from "lucide-react";
 import Image from "next/image";
@@ -12,6 +13,8 @@ interface fileUploadProps {
 }
 
 const FileUpload = ({ endpoint, value, onChange }: fileUploadProps) => {
+  const { toast } = useToast();
+
   const fileType = value.split(".").pop();
 
   if (value && fileType !== "pdf") {
@@ -31,8 +34,14 @@ const FileUpload = ({ endpoint, value, onChange }: fileUploadProps) => {
     <UploadDropzone
       endpoint={endpoint}
       onClientUploadComplete={(response) => onChange(response?.[0]?.url)}
-      onUploadError={(error: Error) => {
-        console.log(error);
+      onUploadError={(error) => {
+        if (error.code === "BAD_REQUEST") {
+          toast({
+            title: "Error",
+            description: "Please check your file size and try again.",
+            variant: "destructive",
+          });
+        }
       }}
     />
   );
