@@ -18,9 +18,14 @@ const NavigationSidebar = async () => {
 
   const servers = await db.server.findMany({
     where: {
-      profileId: profile.id,
+      members: {
+        some: {
+          profileId: profile.id,
+        },
+      },
     },
   });
+  // console.log("servers", servers);
 
   return (
     <div className="space-y-4 flex flex-col items-center h-full text-primary w-full dark:bg-[#1E1F22] bg-[#E3E5E8] py-3">

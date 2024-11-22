@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -28,10 +28,11 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useModal } from "@/hooks/use-modal-store";
 
-const CreateServerModal = () => {
-  const { isOpen, onClose, type } = useModal();
+const EditServerModal = () => {
+  const { isOpen, onClose, type, data } = useModal();
   const { toast } = useToast();
   const router = useRouter();
+  const { server } = data;
   const form = useForm({
     resolver: zodResolver(serverCreationSchema),
     defaultValues: {
@@ -40,10 +41,16 @@ const CreateServerModal = () => {
     },
   });
 
-  const isModalOpen = isOpen && type === "createServer";
+  useEffect(() => {
+    if (server) {
+      form.setValue("name", server?.name);
+      form.setValue("imageUrl", server?.imageUrl);
+    }
+  }, [form, server]);
+
+  const isModalOpen = isOpen && type === "editServer";
 
   const handleClose = () => {
-    form.reset();
     onClose();
   };
 
@@ -51,13 +58,12 @@ const CreateServerModal = () => {
 
   const onSubmit = async (formData: z.infer<typeof serverCreationSchema>) => {
     try {
-      await axios.post("/api/server", {
+      await axios.patch(`/api/server/${server?.id}`, {
         name: formData.name,
         imageUrl: formData.imageUrl,
       });
-
-      form.reset();
       router.refresh();
+      onClose();
     } catch (error) {
       const axiosError = error as AxiosError;
       console.error(axiosError);
@@ -75,7 +81,7 @@ const CreateServerModal = () => {
       <DialogContent className="bg-white text-black p-0 overflow-hidden">
         <DialogHeader className="pt-8 px-6">
           <DialogTitle className="text-2xl text-center font-bold">
-            Create your server
+            Update the server
           </DialogTitle>
           <DialogDescription className="text-center text-zinc-500">
             Give your server a personality with a name and an image, which you
@@ -126,7 +132,7 @@ const CreateServerModal = () => {
             </div>
             <DialogFooter className="bg-gray-100 px-6 py-4">
               <Button disabled={isLoading} variant={"primary"}>
-                Create Server
+                Save
               </Button>
             </DialogFooter>
           </form>
@@ -136,4 +142,4 @@ const CreateServerModal = () => {
   );
 };
 
-export default CreateServerModal;
+export default EditServerModal;
