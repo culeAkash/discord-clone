@@ -64,7 +64,8 @@ const CreateServerModal = () => {
       // Handle error based on the specific API error
       toast({
         title: "Error",
-        description: axiosError.response?.data.message,
+        description: (axiosError.response?.data as { message: string })
+          ?.message,
         variant: "destructive",
       });
     }

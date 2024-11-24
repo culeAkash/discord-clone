@@ -13,18 +13,20 @@ import { Input } from "@/components/ui/input";
 import { Button } from "../ui/button";
 import { Check, Copy, RefreshCw } from "lucide-react";
 import { useOrigin } from "@/hooks/use-origin";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
+import { useToast } from "@/hooks/use-toast";
 
 const InviteMemberModal = () => {
   const { onOpen, isOpen, onClose, type, data } = useModal();
 
   const isModalOpen = isOpen && type === "inviteMember";
+  const { toast } = useToast();
 
   const origin = useOrigin();
 
   const server = data.server;
 
-  const inviteUrl = `${origin}/invite/${server?.inviteCode}`;
+  const inviteUrl = `${origin}  ${server?.inviteCode}`;
 
   const [copied, setCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -49,7 +51,14 @@ const InviteMemberModal = () => {
       );
       onOpen("inviteMember", { server: response.data.data.server });
     } catch (error) {
-      console.log(error);
+      const axiosError = error as AxiosError;
+      console.log(axiosError);
+      toast({
+        title: "Error",
+        description: (axiosError.response?.data as { message: string })
+          ?.message,
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
