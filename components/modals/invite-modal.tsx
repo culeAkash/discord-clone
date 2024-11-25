@@ -26,7 +26,7 @@ const InviteMemberModal = () => {
 
   const server = data.server;
 
-  const inviteUrl = `${origin}  ${server?.inviteCode}`;
+  const inviteUrl = `${origin}/invite/${server?.inviteCode}`;
 
   const [copied, setCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
