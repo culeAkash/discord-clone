@@ -20,10 +20,10 @@ export const ourFileRouter = {
     image: { maxFileSize: "4MB", minFileCount: 1, maxFileCount: 1 },
   })
     .middleware(() => handleAuth())
-    .onUploadComplete(async ({ metadata, file }) => {}),
+    .onUploadComplete(async ({}) => {}),
   messageFile: f(["image", "pdf"])
     .middleware(() => handleAuth())
-    .onUploadComplete(async ({ metadata, file }) => {}),
+    .onUploadComplete(async ({}) => {}),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;
