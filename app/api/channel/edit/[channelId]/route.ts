@@ -3,19 +3,20 @@ import { db } from "@/lib/db";
 import { MemberRole } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
-export const POST = async (
+export const PATCH = async (
   request: NextRequest,
-  { params }: { params: Promise<{ serverId: string }> }
+  { params }: { params: Promise<{ channelId: string }> }
 ) => {
-  const serverId = (await params).serverId;
+  const channelId = (await params).channelId;
+  const serverId = request.nextUrl.searchParams.get("serverId");
   const body = await request.json();
   const { name, type } = body;
 
-  if (!serverId || !name || !type) {
+  if (!serverId || !name || !type || !channelId) {
     return NextResponse.json(
       {
         success: false,
-        message: "Missing required fields : serverId, name, type",
+        message: "Missing required fields : serverId, name, type,channelId",
       },
       {
         status: 400,
@@ -67,7 +68,7 @@ export const POST = async (
       return NextResponse.json(
         {
           success: false,
-          message: "You are not authorized to create a channel.",
+          message: "You are not authorized to edit a channel.",
         },
         {
           status: 403,
@@ -89,10 +90,17 @@ export const POST = async (
       },
       data: {
         channels: {
-          create: {
-            profileId: currentUserId,
-            name,
-            type,
+          update: {
+            where: {
+              id: channelId,
+              NOT: {
+                name: "general",
+              },
+            },
+            data: {
+              name: name,
+              type: type,
+            },
           },
         },
       },
@@ -112,7 +120,7 @@ export const POST = async (
     return NextResponse.json(
       {
         success: false,
-        message: "Failed to create channel.",
+        message: "Failed to edit channel.",
       },
       {
         status: 500,

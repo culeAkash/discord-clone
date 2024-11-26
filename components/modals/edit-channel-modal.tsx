@@ -25,7 +25,6 @@ import axios, { AxiosError } from "axios";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useModal } from "@/hooks/use-modal-store";
-import { ChannelType } from "@prisma/client";
 import {
   Select,
   SelectContent,
@@ -35,54 +34,47 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { ChannelType } from "@prisma/client";
 
-const CreateChannel = () => {
+const EditChannelModal = () => {
   const { isOpen, onClose, type, data } = useModal();
-  const { server } = data;
   const { toast } = useToast();
   const router = useRouter();
-  const { channelType } = data;
-  console.log(channelType);
-
+  const { server, channel, channelType } = data;
   const form = useForm({
     resolver: zodResolver(channelCreationSchema),
     defaultValues: {
       name: "",
-      type: channelType || ChannelType.TEXT,
+      type: channelType!,
     },
   });
 
   useEffect(() => {
-    if (channelType) {
+    if (channel && channelType) {
+      form.setValue("name", channel?.name);
       form.setValue("type", channelType);
-    } else {
-      form.setValue("type", ChannelType.TEXT);
     }
-  }, [channelType, form]);
+  }, [channel, channelType, form, server]);
 
-  const isModalOpen = isOpen && type === "createChannel";
+  const isModalOpen = isOpen && type === "editChannel";
 
   const handleClose = () => {
-    form.reset();
     onClose();
   };
 
   const { isSubmitting: isLoading } = form.formState;
 
   const onSubmit = async (formData: z.infer<typeof channelCreationSchema>) => {
-    // console.log(server?.id);
-    // console.log(server);
-
     try {
-      await axios.post(`/api/channel/${server?.id}`, {
-        name: formData.name,
-        type: formData.type,
-      });
-      //   console.log(formData);
-
-      form.reset();
-      onClose();
+      await axios.patch(
+        `/api/channel/edit/${channel?.id}?serverId=${server?.id}`,
+        {
+          name: formData.name,
+          type: formData.type,
+        }
+      );
       router.refresh();
+      onClose();
     } catch (error) {
       const axiosError = error as AxiosError;
       console.error(axiosError);
@@ -101,7 +93,7 @@ const CreateChannel = () => {
       <DialogContent className="bg-white text-black p-0 overflow-hidden">
         <DialogHeader className="pt-8 px-6">
           <DialogTitle className="text-2xl text-center font-bold">
-            Create Channel
+            Edit Channel
           </DialogTitle>
         </DialogHeader>
         <Form {...form}>
@@ -168,7 +160,7 @@ const CreateChannel = () => {
             </div>
             <DialogFooter className="bg-gray-100 px-6 py-4">
               <Button disabled={isLoading} variant={"primary"}>
-                Create Channel
+                Update Channel
               </Button>
             </DialogFooter>
           </form>
@@ -178,4 +170,4 @@ const CreateChannel = () => {
   );
 };
 
-export default CreateChannel;
+export default EditChannelModal;
