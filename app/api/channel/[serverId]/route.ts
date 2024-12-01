@@ -23,7 +23,7 @@ export const POST = async (
     );
   }
 
-  console.log(serverId);
+  // console.log(serverId);
 
   if (name === "general") {
     return NextResponse.json(
@@ -53,7 +53,7 @@ export const POST = async (
     }
 
     const currentUserId = profile?.id;
-    console.log(serverId, currentUserId);
+    // console.log(serverId, currentUserId);
 
     const member = await db.member.findFirst({
       where: {
@@ -61,7 +61,7 @@ export const POST = async (
         profileId: currentUserId,
       },
     });
-    console.log(member);
+    // console.log(member);
 
     if (!member || member.role === "GUEST") {
       return NextResponse.json(

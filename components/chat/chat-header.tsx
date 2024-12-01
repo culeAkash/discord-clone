@@ -3,6 +3,7 @@ import { Hash, Mic, Video } from "lucide-react";
 import React from "react";
 import MobileToggle from "../mobile-toggle";
 import UserAvatar from "../user-avatar";
+import SocketIndicator from "../socket-indicator";
 
 const iconMap = {
   [ChannelType.TEXT]: Hash,
@@ -37,6 +38,9 @@ const ChatHeader = ({
         <UserAvatar src={imageUrl} className="h-8 w-8 md:h-8 md:w-8 mx-2" />
       )}
       <p className="font-semibold text-md text-black dark:text-white">{name}</p>
+      <div className="ml-auto flex items-center">
+        <SocketIndicator />
+      </div>
     </div>
   );
 };

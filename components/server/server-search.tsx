@@ -51,9 +51,9 @@ const ServerSearch = ({ searchData }: ServerSearchProps) => {
   }) => {
     setOpen(false);
     if (type === "member") {
-      return router.push(`/servers/${params.serverId}/members/${id}`);
+      return router.push(`/servers/${params?.serverId}/members/${id}`);
     } else {
-      return router.push(`/servers/${params.serverId}/channels/${id}`);
+      return router.push(`/servers/${params?.serverId}/channels/${id}`);
     }
   };
 
