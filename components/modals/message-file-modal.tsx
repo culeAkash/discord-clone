@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -20,6 +20,7 @@ import axios, { AxiosError } from "axios";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useModal } from "@/hooks/use-modal-store";
+import { FileType } from "@prisma/client";
 
 export const formSchema = z.object({
   fileUrl: z.string().min(1, { message: "file is required" }),
@@ -30,6 +31,7 @@ const MessageFileModal = () => {
   const router = useRouter();
   const { isOpen, onClose, type, data } = useModal();
   const { apiUrl, query } = data;
+  const [isPdf, setIsPdf] = useState(false);
 
   const isModalOpen = isOpen && type === "messageFile";
   const form = useForm<z.infer<typeof formSchema>>({
@@ -53,6 +55,7 @@ const MessageFileModal = () => {
         {
           ...formData,
           content: formData.fileUrl,
+          fileType: isPdf ? FileType.PDF : FileType.IMAGE,
         },
         {
           params: query,
@@ -100,6 +103,8 @@ const MessageFileModal = () => {
                           endpoint="messageFile"
                           value={field.value}
                           onChange={field.onChange}
+                          isPdf={isPdf}
+                          setIsPdf={setIsPdf}
                         />
                       </FormControl>
                     </FormItem>

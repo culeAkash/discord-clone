@@ -14,3 +14,7 @@ export const channelCreationSchema = z.object({
 export const chatSchema = z.object({
   content: z.string().min(1),
 });
+
+export const editMessageSchema = z.object({
+  content: z.string().min(1),
+});

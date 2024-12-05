@@ -4,21 +4,24 @@ import { useToast } from "@/hooks/use-toast";
 import { UploadDropzone } from "@/lib/uploadthing";
 import { FileIcon, X } from "lucide-react";
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 interface fileUploadProps {
   endpoint: "messageFile" | "serverImage";
   value: string;
   onChange: (url?: string) => void;
+  isPdf?: boolean;
+  setIsPdf?: (isPdf: boolean) => void;
 }
 
-const FileUpload = ({ endpoint, value, onChange }: fileUploadProps) => {
+const FileUpload = ({
+  endpoint,
+  value,
+  onChange,
+  isPdf,
+  setIsPdf,
+}: fileUploadProps) => {
   const { toast } = useToast();
-  const [isPdf, setIsPdf] = useState(false);
-
-  useEffect(() => {
-    setIsPdf(false);
-  }, []);
 
   if (value && !isPdf) {
     return (
@@ -67,7 +70,7 @@ const FileUpload = ({ endpoint, value, onChange }: fileUploadProps) => {
         // console.log(name);
         const type = name.split(".").pop() || "";
         if (type === "pdf") {
-          setIsPdf(true);
+          if (isPdf && setIsPdf) setIsPdf(true);
         }
       }}
       onClientUploadComplete={(response) => onChange(response?.[0]?.url)}
