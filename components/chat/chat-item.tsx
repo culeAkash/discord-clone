@@ -22,6 +22,7 @@ import { Button } from "../ui/button";
 import axios, { AxiosError } from "axios";
 import { useToast } from "@/hooks/use-toast";
 import { useModal } from "@/hooks/use-modal-store";
+import { useParams, useRouter } from "next/navigation";
 
 interface ChatItemProps {
   id: string;
@@ -62,6 +63,15 @@ const ChatItem = ({
 }: ChatItemProps) => {
   const { toast } = useToast();
   const { onOpen } = useModal();
+  const router = useRouter();
+  const params = useParams();
+
+  const onMemberClick = () => {
+    if (member.id === currentMember.id) {
+      return;
+    }
+    router.push(`/servers/${params?.serverId}/conversations/${member.id}`);
+  };
 
   const [isEditing, setIsEditing] = useState(false);
 
@@ -104,7 +114,7 @@ const ChatItem = ({
   const onSubmit = async (formData: z.infer<typeof editMessageSchema>) => {
     try {
       await axios.patch(
-        `${socketUrl}/${id}?serverId=${socketQuery.serverId}&channelId=${socketQuery.channelId}`,
+        `${socketUrl}/${id}?query=${JSON.stringify(socketQuery)}`,
         formData
       );
       form.reset();
@@ -125,13 +135,19 @@ const ChatItem = ({
   return (
     <div className="relative group flex items-center hover:bg-black/5 p-4 transition w-full">
       <div className="group flex gap-2 items-start w-full">
-        <div className="cursor-pointer hover:drop-shadow-md transition">
+        <div
+          className="cursor-pointer hover:drop-shadow-md transition"
+          onClick={onMemberClick}
+        >
           <UserAvatar src={member.profile.imageUrl} />
         </div>
         <div className="flex flex-col w-full">
           <div className="flex items-center gap-x-2">
             <div className="flex items-center">
-              <p className="font-semibold text-sm hover:underline cursor-pointer ">
+              <p
+                className="font-semibold text-sm hover:underline cursor-pointer "
+                onClick={onMemberClick}
+              >
                 {member.profile.name}
               </p>
               <ActionTooltip label={member.role}>

@@ -3,7 +3,6 @@ import { NextApiRequest } from "next";
 import { NextResponse } from "next/server";
 import { NextApiResponseServerIO } from "../../../../utils/types";
 import { db } from "@/lib/db";
-import { MemberRole } from "@prisma/client";
 
 export default async function handler(
   request: NextApiRequest,
@@ -16,15 +15,13 @@ export default async function handler(
   try {
     const profile = await currentProfile(request);
 
-    const { messageId, query } = request.query;
+    const { directMessageId, query } = request.query;
 
-    // console.log(messageId);
-
-    const { serverId, channelId } = JSON.parse(query as string);
-
-    // console.log(serverId, channelId, query);
+    const { conversationId } = JSON.parse(query as string);
 
     const { content } = request.body;
+
+    // console.log("DELETE_MESSAGE", directMessageId, conversationId);
 
     if (!profile) {
       return NextResponse.json(
@@ -38,51 +35,54 @@ export default async function handler(
       );
     }
 
-    if (!messageId || !serverId || !channelId) {
+    if (!directMessageId || !conversationId) {
       return response.status(400).json({
         success: false,
         message: "Missing required fields",
       });
     }
 
-    const server = await db.server.findFirst({
+    const conversation = await db.conversation.findFirst({
       where: {
-        id: serverId as string,
-        members: {
-          some: {
-            profileId: profile.id,
+        id: conversationId as string,
+        OR: [
+          {
+            memberOne: {
+              profileId: profile.id,
+            },
+          },
+          {
+            memberTwo: {
+              profileId: profile.id,
+            },
+          },
+        ],
+      },
+      include: {
+        memberOne: {
+          include: {
+            profile: true,
+          },
+        },
+        memberTwo: {
+          include: {
+            profile: true,
           },
         },
       },
-      include: {
-        members: true,
-      },
     });
 
-    if (!server) {
+    if (!conversation) {
       return response.status(404).json({
         success: false,
-        message: "Server not found",
+        message: "Conversation not found",
       });
     }
 
-    const channel = await db.channel.findFirst({
-      where: {
-        id: channelId as string,
-        serverId: server.id as string,
-      },
-    });
-
-    if (!channel) {
-      return response.status(404).json({
-        success: false,
-        message: "Channel not found",
-      });
-    }
-
-    const member = server.members.find(
-      (member) => member.profileId === profile.id
-    );
+    const member =
+      conversation.memberOne.profileId === profile.id
+        ? conversation.memberOne
+        : conversation.memberTwo;
 
     if (!member) {
       return response.status(404).json({
@@ -91,8 +91,11 @@ export default async function handler(
       });
     }
 
-    let message = await db.message.findFirst({
-      where: { id: messageId as string, channelId: channelId as string },
+    let directMessage = await db.directMessage.findFirst({
+      where: {
+        id: directMessageId as string,
+        conversationId: conversationId as string,
+      },
       include: {
         member: {
           include: {
@@ -102,17 +105,15 @@ export default async function handler(
       },
     });
 
-    if (!message || message.deleted) {
+    if (!directMessage || directMessage.deleted) {
       return response.status(404).json({
         success: false,
         message: "Message not found",
       });
     }
 
-    const isMessageOwner = message.memberId === member.id;
-    const isAdmin = member.role === MemberRole.ADMIN;
-    const isModerator = member.role === MemberRole.MODERATOR;
-    const canModifyMessage = isMessageOwner || isAdmin || isModerator;
+    const isMessageOwner = directMessage.memberId === member.id;
+    const canModifyMessage = isMessageOwner;
 
     if (!canModifyMessage) {
       return response.status(403).json({
@@ -122,8 +123,9 @@ export default async function handler(
     }
 
     if (request.method === "DELETE") {
-      message = await db.message.update({
-        where: { id: messageId as string },
+      // console.log("DELETE MESSAGE", directMessage);
+      directMessage = await db.directMessage.update({
+        where: { id: directMessageId as string },
         data: {
           fileUrl: null,
           content: "This message has been deleted",
@@ -149,8 +151,8 @@ export default async function handler(
 
       // console.log("PATCH MESSAGE CONTENT", messageId, message.id, content);
 
-      message = await db.message.update({
-        where: { id: message.id },
+      directMessage = await db.directMessage.update({
+        where: { id: directMessageId as string },
         data: { content },
         include: {
           member: {
@@ -163,9 +165,9 @@ export default async function handler(
       // console.log("PATCH MESSAGE", updatedMessage);
     }
 
-    const updateKey = `chat:${channelId}:messages:update`;
+    const updateKey = `chat:${conversation.id}:messages:update`;
 
-    response?.socket?.server?.io?.emit(updateKey, message);
+    response?.socket?.server?.io?.emit(updateKey, directMessage);
 
     return response.status(200).json({
       success: true,

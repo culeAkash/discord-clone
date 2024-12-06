@@ -22,14 +22,13 @@ const DeleteMessageModal = () => {
   const { toast } = useToast();
 
   const [isLoading, setIsLoading] = useState(false);
+  console.log(data.query);
 
   const onDeleteMessage = async () => {
     try {
       setIsLoading(true);
       // send request to leave server
-      await axios.delete(
-        `${data.apiUrl}?serverId=${data.query?.serverId}&channelId=${data.query?.channelId}`
-      );
+      await axios.delete(`${data.apiUrl}?query=${JSON.stringify(data.query)}`);
       onClose();
     } catch (error) {
       const axiosError = error as AxiosError;
