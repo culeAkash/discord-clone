@@ -50,6 +50,8 @@ const MessageFileModal = () => {
 
   const onSubmit = async (formData: z.infer<typeof formSchema>) => {
     try {
+      console.log(isPdf);
+
       await axios.post(
         apiUrl || "",
         {

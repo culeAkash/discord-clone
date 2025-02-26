@@ -75,6 +75,8 @@ const ChatItem = ({
 
   const [isEditing, setIsEditing] = useState(false);
 
+  console.log(fileType);
+
   const isAdmin = member.role === MemberRole.ADMIN;
   const isModerator = member.role === MemberRole.MODERATOR;
   const isOwner = member.id === currentMember.id;
@@ -82,6 +84,8 @@ const ChatItem = ({
   const canEditMessage = !deleted && !fileUrl && isOwner;
   const isPdf = fileType === FileType.PDF && fileUrl;
   const isImage = fileType === FileType.IMAGE && fileUrl;
+
+  console.log(isPdf);
 
   const form = useForm<z.infer<typeof editMessageSchema>>({
     defaultValues: {

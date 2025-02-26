@@ -69,8 +69,13 @@ const FileUpload = ({
       onUploadBegin={(name) => {
         // console.log(name);
         const type = name.split(".").pop() || "";
+        console.log(type);
+
         if (type === "pdf") {
-          if (isPdf && setIsPdf) setIsPdf(true);
+          console.log(isPdf, setIsPdf);
+          if (isPdf !== undefined && setIsPdf) {
+            setIsPdf(true);
+          }
         }
       }}
       onClientUploadComplete={(response) => onChange(response?.[0]?.url)}
