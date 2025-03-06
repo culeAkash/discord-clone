@@ -10,18 +10,15 @@ const ChatVideoButton = () => {
   const router = useRouter();
 
   const searchParams = useSearchParams();
-  const isVideo = searchParams?.get("video");
+  const isVideo = searchParams?.get("video") === "true" ? true : false;
 
-  console.log(isVideo);
+  // console.log(isVideo);
 
-  const Icon = isVideo !== "undefined" ? VideoOff : Video;
-  const toolTipLabel =
-    isVideo !== "undefined" ? "End Video call" : "Start Video call";
+  const Icon = isVideo ? VideoOff : Video;
+  const toolTipLabel = isVideo ? "End Video call" : "Start Video call";
 
   const onClick = () => {
-    const url = `${pathname}?video=${
-      isVideo !== "undefined" ? undefined : true
-    }`;
+    const url = `${pathname}?video=${!!isVideo ? false : true}`;
     router.replace(url);
   };
 

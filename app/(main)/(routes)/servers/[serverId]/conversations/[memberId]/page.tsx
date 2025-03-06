@@ -28,7 +28,12 @@ const ConversationMemberIdPage = async ({
 
   const { memberId, serverId } = await params;
   const { video } = await searchParams;
-  const isVideo = video !== "undefined";
+
+  // console.log(typeof video);
+
+  const isVideo = video === "true" ? true : false;
+
+  // console.log(isVideo);
 
   const currentMember = await db.member.findFirst({
     where: {
